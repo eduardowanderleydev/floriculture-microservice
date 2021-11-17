@@ -2,6 +2,7 @@ package br.com.eduardobpwj.microservice.floriculture.store.service;
 
 import br.com.eduardobpwj.microservice.floriculture.store.controller.dto.InfoProviderDTO;
 import br.com.eduardobpwj.microservice.floriculture.store.controller.dto.PurchaseDTO;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -11,10 +12,11 @@ import org.springframework.web.client.RestTemplate;
 public class PurchaseService {
 
 
-    public void makePurchase(PurchaseDTO purchase) {
+    @Autowired
+    private RestTemplate client;
 
-        RestTemplate client = new RestTemplate();
-        ResponseEntity<InfoProviderDTO> exchange = client.exchange("http://localhost:8081/info/" + purchase.getAddress().getState(),
+    public void makePurchase(PurchaseDTO purchase) {
+        ResponseEntity<InfoProviderDTO> exchange = client.exchange("http://provider/info/" + purchase.getAddress().getState(),
                 HttpMethod.GET,
                 null,
                 InfoProviderDTO.class);
