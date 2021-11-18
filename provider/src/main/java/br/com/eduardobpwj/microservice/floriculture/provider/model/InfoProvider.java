@@ -3,9 +3,11 @@ package br.com.eduardobpwj.microservice.floriculture.provider.model;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.Table;
 import java.io.Serializable;
 
 @Entity
+@Table(name = "infos_provider")
 public class InfoProvider implements Serializable {
 
     @Id

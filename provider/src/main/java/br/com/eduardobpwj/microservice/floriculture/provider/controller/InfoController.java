@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/info")
-public class ProviderController {
+public class InfoController {
 
     @Autowired
     private InfoService infoService;
