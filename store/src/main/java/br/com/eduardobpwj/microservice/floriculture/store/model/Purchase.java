@@ -1,13 +1,17 @@
 package br.com.eduardobpwj.microservice.floriculture.store.model;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
+import br.com.eduardobpwj.microservice.floriculture.store.enumerated.PurchaseState;
+
+import javax.persistence.*;
 import java.time.LocalDate;
 
 @Entity
 public class Purchase {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
     private Long idOrder;
 
     private Integer prepareTime;
@@ -17,6 +21,9 @@ public class Purchase {
     private LocalDate deliveryForecast;
 
     private Long voucher;
+
+    @Enumerated(EnumType.STRING)
+    private PurchaseState state;
 
     public Long getIdOrder() {
         return idOrder;
@@ -56,5 +63,21 @@ public class Purchase {
 
     public Long getVoucher() {
         return voucher;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public void setState(PurchaseState state) {
+        this.state = state;
+    }
+
+    public PurchaseState getState() {
+        return state;
     }
 }
