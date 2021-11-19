@@ -1,20 +1,25 @@
 package br.com.eduardobpwj.microservice.floriculture.store.service;
 
 import br.com.eduardobpwj.microservice.floriculture.store.client.ProviderClient;
-import br.com.eduardobpwj.microservice.floriculture.store.controller.dto.InfoProviderDTO;
-import br.com.eduardobpwj.microservice.floriculture.store.controller.dto.OrderInfoDTO;
-import br.com.eduardobpwj.microservice.floriculture.store.controller.dto.PurchaseDTO;
+import br.com.eduardobpwj.microservice.floriculture.store.client.TransporterClient;
+import br.com.eduardobpwj.microservice.floriculture.store.controller.dto.*;
 import br.com.eduardobpwj.microservice.floriculture.store.model.Purchase;
 import br.com.eduardobpwj.microservice.floriculture.store.repository.PurchaseRepository;
+import com.netflix.discovery.converters.Auto;
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDate;
 
 @Service
 public class PurchaseService {
 
     @Autowired
-    private ProviderClient client;
+    private ProviderClient providerClient;
+
+    @Autowired
+    private TransporterClient transporterClient;
 
     @Autowired
     private PurchaseRepository repository;
@@ -27,23 +32,30 @@ public class PurchaseService {
     @HystrixCommand(fallbackMethod = "makePurchaseFallback",
     threadPoolKey = "makePurchaseThreadPool")
     public Purchase makePurchase(PurchaseDTO purchase) {
-        InfoProviderDTO info = client.getInfoByState(purchase.getAddress().getState());
+        InfoProviderDTO providerInfo = providerClient.getInfoByState(purchase.getAddress().getState());
 
-        OrderInfoDTO order = client.makeOrder(purchase.getItens());
+        OrderInfoDTO orderInfo = providerClient.makeOrder(purchase.getItens());
 
-        System.out.println(info);
+        InfoDeliveryDTO deliveryInfo = new InfoDeliveryDTO();
+        deliveryInfo.setOrderId(orderInfo.getId());
+        deliveryInfo.setDeliveryDate(LocalDate.now().plusDays(orderInfo.getPrepareTime()));
+        deliveryInfo.setSourceAddress(providerInfo.getAddress());
+        deliveryInfo.setTargetAddress(purchase.getAddress().toString());
+        VoucherDTO voucher = transporterClient.deliveryReservation(deliveryInfo);
 
         Purchase savedPurchase = new Purchase();
-        savedPurchase.setIdOrder(order.getId());
+        savedPurchase.setIdOrder(orderInfo.getId());
         savedPurchase.setTargetAddress(purchase.getAddress().toString());
-        savedPurchase.setPrepareTime(order.getPrepareTime());
+        savedPurchase.setPrepareTime(orderInfo.getPrepareTime());
+        savedPurchase.setDeliveryForecast(voucher.getDeliveryForecast());
+        savedPurchase.setVoucher(voucher.getNumber());
         repository.save(savedPurchase);
         return savedPurchase;
     }
 
     public Purchase makePurchaseFallback(PurchaseDTO purchase) {
         Purchase fallBackPurchase = new Purchase();
-        fallBackPurchase.setTargetAddress("fallback");
+        fallBackPurchase.setTargetAddress("something is wrong, im returning a fallback");
         return fallBackPurchase;
     }
 }
