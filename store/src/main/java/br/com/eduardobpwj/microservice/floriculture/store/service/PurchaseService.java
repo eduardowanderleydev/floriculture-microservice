@@ -5,6 +5,7 @@ import br.com.eduardobpwj.microservice.floriculture.store.controller.dto.InfoPro
 import br.com.eduardobpwj.microservice.floriculture.store.controller.dto.OrderInfoDTO;
 import br.com.eduardobpwj.microservice.floriculture.store.controller.dto.PurchaseDTO;
 import br.com.eduardobpwj.microservice.floriculture.store.model.Purchase;
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -14,6 +15,7 @@ public class PurchaseService {
     @Autowired
     private ProviderClient client;
 
+    @HystrixCommand(fallbackMethod = "makePurchaseFallback")
     public Purchase makePurchase(PurchaseDTO purchase) {
         InfoProviderDTO info = client.getInfoByState(purchase.getAddress().getState());
 
@@ -26,6 +28,12 @@ public class PurchaseService {
         savedPurchase.setTargetAddress(purchase.getAddress().toString());
         savedPurchase.setPrepareTime(order.getPrepareTime());
         return savedPurchase;
+    }
+
+    public Purchase makePurchaseFallback(PurchaseDTO purchase) {
+        Purchase fallBackPurchase = new Purchase();
+        fallBackPurchase.setTargetAddress("fallback");
+        return fallBackPurchase;
     }
 
 }
