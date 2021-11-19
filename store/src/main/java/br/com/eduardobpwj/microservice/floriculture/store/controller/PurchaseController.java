@@ -18,4 +18,9 @@ public class PurchaseController {
         return purchaseService.makePurchase(purchase);
     }
 
+    @GetMapping("{id}")
+    public Purchase getById(@PathVariable("id") Long id){
+        return purchaseService.getById(id);
+    }
+
 }

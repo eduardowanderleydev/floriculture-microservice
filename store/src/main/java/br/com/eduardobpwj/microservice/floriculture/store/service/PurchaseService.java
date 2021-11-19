@@ -5,6 +5,7 @@ import br.com.eduardobpwj.microservice.floriculture.store.controller.dto.InfoPro
 import br.com.eduardobpwj.microservice.floriculture.store.controller.dto.OrderInfoDTO;
 import br.com.eduardobpwj.microservice.floriculture.store.controller.dto.PurchaseDTO;
 import br.com.eduardobpwj.microservice.floriculture.store.model.Purchase;
+import br.com.eduardobpwj.microservice.floriculture.store.repository.PurchaseRepository;
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -15,7 +16,16 @@ public class PurchaseService {
     @Autowired
     private ProviderClient client;
 
-    @HystrixCommand(fallbackMethod = "makePurchaseFallback")
+    @Autowired
+    private PurchaseRepository repository;
+
+    @HystrixCommand(threadPoolKey = "getByIdThreadPool")
+    public Purchase getById(Long id) {
+        return repository.findById(id).orElse(new Purchase());
+    }
+
+    @HystrixCommand(fallbackMethod = "makePurchaseFallback",
+    threadPoolKey = "makePurchaseThreadPool")
     public Purchase makePurchase(PurchaseDTO purchase) {
         InfoProviderDTO info = client.getInfoByState(purchase.getAddress().getState());
 
@@ -27,6 +37,7 @@ public class PurchaseService {
         savedPurchase.setIdOrder(order.getId());
         savedPurchase.setTargetAddress(purchase.getAddress().toString());
         savedPurchase.setPrepareTime(order.getPrepareTime());
+        repository.save(savedPurchase);
         return savedPurchase;
     }
 
@@ -35,5 +46,4 @@ public class PurchaseService {
         fallBackPurchase.setTargetAddress("fallback");
         return fallBackPurchase;
     }
-
 }

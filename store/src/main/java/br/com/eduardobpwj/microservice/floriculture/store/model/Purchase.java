@@ -1,7 +1,12 @@
 package br.com.eduardobpwj.microservice.floriculture.store.model;
 
+import javax.persistence.Entity;
+import javax.persistence.Id;
+
+@Entity
 public class Purchase {
 
+    @Id
     private Long idOrder;
 
     private Integer prepareTime;
