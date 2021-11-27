@@ -14,12 +14,12 @@ public class PurchaseController {
     private PurchaseService purchaseService;
 
     @PostMapping
-    public Purchase makePurchase(@RequestBody PurchaseDTO purchase){
+    public Purchase makePurchase(@RequestBody PurchaseDTO purchase) {
         return purchaseService.makePurchase(purchase);
     }
 
     @GetMapping("{id}")
-    public Purchase getById(@PathVariable("id") Long id){
+    public Purchase getById(@PathVariable("id") Long id) {
         return purchaseService.getById(id);
     }
 
